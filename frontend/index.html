@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sistem Buku Tamu Digital</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="css/style.css" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col font-sans">
+  
+  <!-- Header / Navbar -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm backdrop-blur-md bg-white/90">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-md shadow-indigo-200">
+          <i data-lucide="book-open-check" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <h1 class="text-lg font-bold text-slate-900 leading-tight">Buku Tamu Digital</h1>
+          <p class="text-xs text-slate-500">Sistem Pencatatan & Manajemen Kunjungan</p>
+        </div>
+      </div>
+      
+      <div class="flex items-center gap-2 sm:gap-3">
+        <a href="/api/export/csv" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 transition">
+          <i data-lucide="download" class="w-4 h-4"></i>
+          <span class="hidden sm:inline">Export CSV</span>
+        </a>
+        <button id="btnOpenModal" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm shadow-indigo-200 transition">
+          <i data-lucide="plus-circle" class="w-4 h-4"></i>
+          <span>Tambah Tamu</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+    
+    <!-- Stats Cards -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+        <div>
+          <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Total Kunjungan</p>
+          <h3 id="statTotal" class="text-2xl font-bold text-slate-900 mt-1">0</h3>
+        </div>
+        <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+          <i data-lucide="users" class="w-6 h-6"></i>
+        </div>
+      </div>
+
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+        <div>
+          <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Kunjungan Hari Ini</p>
+          <h3 id="statToday" class="text-2xl font-bold text-indigo-600 mt-1">0</h3>
+        </div>
+        <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+          <i data-lucide="calendar" class="w-6 h-6"></i>
+        </div>
+      </div>
+
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+        <div>
+          <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Kedinasan & Bisnis</p>
+          <h3 id="statOfficial" class="text-2xl font-bold text-emerald-600 mt-1">0</h3>
+        </div>
+        <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+          <i data-lucide="briefcase" class="w-6 h-6"></i>
+        </div>
+      </div>
+
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+        <div>
+          <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Umum & Lainnya</p>
+          <h3 id="statGeneral" class="text-2xl font-bold text-amber-600 mt-1">0</h3>
+        </div>
+        <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+          <i data-lucide="user-check" class="w-6 h-6"></i>
+        </div>
+      </div>
+    </section>
+
+    <!-- Filters & Search -->
+    <section class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
+      <div class="relative flex-1">
+        <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+        <input 
+          type="text" 
+          id="searchInput" 
+          placeholder="Cari nama, instansi, atau keperluan..." 
+          class="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
+        />
+      </div>
+
+      <div class="flex items-center gap-2">
+        <select 
+          id="categoryFilter" 
+          class="px-3.5 py-2 rounded-xl border border-slate-200 text-sm font-medium text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+        >
+          <option value="Semua">Semua Kategori</option>
+          <option value="Kedinasan">Kedinasan</option>
+          <option value="Bisnis">Bisnis</option>
+          <option value="Studi Banding">Studi Banding</option>
+          <option value="Pribadi">Pribadi</option>
+          <option value="Umum">Umum</option>
+          <option value="Lainnya">Lainnya</option>
+        </select>
+
+        <button 
+          id="btnRefresh" 
+          title="Segarkan data"
+          class="p-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 transition"
+        >
+          <i data-lucide="rotate-cw" class="w-5 h-5"></i>
+        </button>
+      </div>
+    </section>
+
+    <!-- Guestbook Table Section -->
+    <section class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-slate-50/80 border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              <th class="py-3.5 px-4 sm:px-6">Waktu</th>
+              <th class="py-3.5 px-4 sm:px-6">Tamu & Instansi</th>
+              <th class="py-3.5 px-4 sm:px-6">Kategori</th>
+              <th class="py-3.5 px-4 sm:px-6">Keperluan</th>
+              <th class="py-3.5 px-4 sm:px-6">Kontak</th>
+              <th class="py-3.5 px-4 sm:px-6 text-center">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="guestTableBody" class="divide-y divide-slate-100 text-sm">
+            <!-- Dynamic rows will be inserted here -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Loading State -->
+      <div id="loadingState" class="hidden py-12 flex flex-col items-center justify-center text-slate-400 gap-3">
+        <i data-lucide="loader-2" class="w-8 h-8 animate-spin text-indigo-600"></i>
+        <p class="text-sm font-medium">Memuat catatan tamu...</p>
+      </div>
+
+      <!-- Empty State -->
+      <div id="emptyState" class="hidden py-16 px-4 text-center">
+        <div class="w-16 h-16 mx-auto rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mb-4">
+          <i data-lucide="inbox" class="w-8 h-8"></i>
+        </div>
+        <h3 class="text-base font-semibold text-slate-800">Belum Ada Catatan Tamu</h3>
+        <p class="text-sm text-slate-500 max-w-sm mx-auto mt-1">Data tamu yang cocok tidak ditemukan atau belum ada tamu yang tercatat.</p>
+        <button id="btnEmptyAdd" class="mt-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 transition">
+          <i data-lucide="plus" class="w-4 h-4"></i> Tambah Tamu Baru
+        </button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Modal Form Tambah Tamu -->
+  <div id="guestModal" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 transform transition-all">
+      
+      <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
+            <i data-lucide="user-plus" class="w-4 h-4"></i>
+          </div>
+          <h2 class="text-lg font-bold text-slate-900">Form Kunjungan Tamu</h2>
+        </div>
+        <button id="btnCloseModal" class="text-slate-400 hover:text-slate-600 transition">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="guestForm" class="mt-5 space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+            Nama Lengkap <span class="text-rose-500">*</span>
+          </label>
+          <input 
+            type="text" 
+            name="name" 
+            required 
+            placeholder="Contoh: Budi Prasetyo" 
+            class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+          />
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+              Instansi / Perusahaan
+            </label>
+            <input 
+              type="text" 
+              name="institution" 
+              placeholder="Contoh: PT Teknologi Maju" 
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+              Kategori Kunjungan
+            </label>
+            <select 
+              name="category" 
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition bg-white"
+            >
+              <option value="Kedinasan">Kedinasan</option>
+              <option value="Bisnis">Bisnis</option>
+              <option value="Studi Banding">Studi Banding</option>
+              <option value="Pribadi">Pribadi</option>
+              <option value="Umum" selected>Umum</option>
+              <option value="Lainnya">Lainnya</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+              Email
+            </label>
+            <input 
+              type="email" 
+              name="email" 
+              placeholder="nama@email.com" 
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+              No. Telepon / WA
+            </label>
+            <input 
+              type="tel" 
+              name="phone" 
+              placeholder="081234567890" 
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+            Keperluan / Tujuan <span class="text-rose-500">*</span>
+          </label>
+          <textarea 
+            name="purpose" 
+            required 
+            rows="3" 
+            placeholder="Jelaskan maksud dan tujuan kunjungan..."
+            class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+          ></textarea>
+        </div>
+
+        <div class="pt-3 flex items-center justify-end gap-2 border-t border-slate-100">
+          <button 
+            type="button" 
+            id="btnCancelModal" 
+            class="px-4 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-100 transition"
+          >
+            Batal
+          </button>
+          <button 
+            type="submit" 
+            id="btnSubmitGuest"
+            class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 shadow-md shadow-indigo-200 transition"
+          >
+            <i data-lucide="check" class="w-4 h-4"></i>
+            <span>Simpan Catatan</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm"></div>
+
+  <!-- Footer -->
+  <footer class="mt-auto border-t border-slate-200 bg-white py-4 text-center text-xs text-slate-500">
+    <p>Buku Tamu Digital &bull; Dibuat dengan Flask & Vanilla Modern JavaScript</p>
+  </footer>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
