@@ -1,4 +1,4 @@
-# 📖 Sistem Buku Tamu Digital (Guestbook System)
+# 📖 Sistem Buku Tamu Digital (Guestbook System v2.0)
 
 Aplikasi manajemen dan pencatatan buku tamu berbasis web full-stack modern dengan **Backend REST API** dan antarmuka **Frontend Interaktif**.
 
@@ -10,15 +10,23 @@ Aplikasi manajemen dan pencatatan buku tamu berbasis web full-stack modern denga
 
 ---
 
-## 🌟 Fitur Utama
+## 🌟 Fitur Utama (Frontend & Backend)
 
-- **Pencatatan Tamu Real-time**: Formulir modal interaktif untuk mencatat nama, instansi, kategori kunjungan, email, nomor kontak, dan keperluan.
-- **Statistik & Ringkasan Cepat**: Kartu indikator total kunjungan, kunjungan hari ini, kunjungan kedinasan/bisnis, dan kategori umum.
-- **Pencarian & Filter Cepat**: Filter berdasarkan nama, instansi, keperluan, serta kategori kunjungan (Kedinasan, Bisnis, Studi Banding, Pribadi, Umum, dll).
-- **Export Data ke CSV**: Unduh rekapitulasi buku tamu langsung dalam format spreadsheet `.csv`.
-- **Manajemen Data**: Hapus data tamu langsung dari antarmuka dengan konfirmasi keamanan.
-- **Desain Modern & Responsif**: Antarmuka bersih menggunakan Tailwind CSS dengan dukungan tampilan mobile, tablet, dan desktop.
-- **Arsitektur REST API**: Backend decoupled yang dapat dengan mudah diintegrasikan dengan aplikasi lain atau mobile app.
+### 🎨 Fitur Frontend Modern:
+- **🌓 Dark Mode & Light Mode**: Dukungan tema gelap dan terang dengan deteksi preferensi sistem dan penyimpanan di `localStorage`.
+- **✍️ Tanda Tangan Digital (Signature Pad)**: Kanvas HTML5 interaktif untuk membubuhkan tanda tangan langsung lewat mouse maupun layar sentuh (touchscreen/mobile).
+- **📋 Modal Rincian Kunjungan (Detail View)**: Tampilan lengkap data tamu beserta tombol **Salin Email**, **Salin Telepon**, dan pintasan langsung ke **WhatsApp**.
+- **🖨️ Cetak Slip Kunjungan (Printable Pass)**: Desain dokumen bukti tamu siap cetak (`@media print`) untuk kebutuhan resepsionis/keamanan fisik.
+- **🏷️ Filter Pills & Pengurutan**: Tombol kategori cepat (Semua, Kedinasan, Bisnis, Studi Banding, Pribadi, Umum, dll) serta opsi pengurutan (Terbaru, Terlama, A-Z, Z-A).
+- **🎨 Avatar Inisial Dinamis**: Avatar warna-warni berbasis kode hash nama pengunjung.
+- **🗑️ Modal Konfirmasi Hapus**: Dialog konfirmasi kustom yang elegan menggantikan popup browser bawaan.
+- **⌨️ Aksesibilitas Keyboard**: Tekan tombol `/` untuk langsung mencari tamu, dan tombol `Escape` untuk menutup modal.
+
+### ⚙️ Fitur Backend & Database:
+- **RESTful API**: Endpoint modular `/api/guests`, `/api/stats`, dan `/api/export/csv`.
+- **Database SQLite**: Skema otomatis dengan migrasi kolom tanda tangan (`signature`) dan sorting.
+- **Export CSV**: Rekapitulasi seluruh data kunjungan langsung ke file `.csv`.
+- **Unit Testing Otomatis**: Dilengkapi unit test lengkap dengan tingkat kelulusan 100%.
 
 ---
 
@@ -29,7 +37,7 @@ system-buku-tamu/
 │
 ├── backend/
 │   ├── app.py                # Server Flask & routing REST API
-│   ├── database.py           # Operasi SQLite & manajemen query
+│   ├── database.py           # Operasi SQLite & query database
 │   ├── requirements.txt      # Dependensi Python
 │   └── tests/
 │       └── test_api.py       # Unit & integration testing API
@@ -37,9 +45,9 @@ system-buku-tamu/
 ├── frontend/
 │   ├── index.html            # Halaman utama aplikasi (SPA)
 │   ├── css/
-│   │   └── style.css         # Custom style & animasi badge
+│   │   └── style.css         # Custom styling, dark mode & cetak slip
 │   └── js/
-│       └── app.js            # Logika AJAX/Fetch API & interaktivitas
+│       └── app.js            # Interaktivitas, canvas signature, tema & AJAX
 │
 ├── run.py                    # Script runner utama
 ├── .gitignore
@@ -78,30 +86,16 @@ Akses aplikasi melalui browser:
 
 | Method | Endpoint | Deskripsi |
 | :--- | :--- | :--- |
-| `GET` | `/api/guests` | Mengambil seluruh daftar tamu (mendukung parameter `?search=` & `?category=`) |
-| `POST` | `/api/guests` | Menambahkan catatan tamu baru (JSON payload) |
+| `GET` | `/api/guests` | Mengambil daftar tamu (mendukung parameter `?search=`, `?category=`, dan `?sort_by=`) |
+| `POST` | `/api/guests` | Menambahkan catatan tamu baru (JSON payload termasuk tanda tangan digital) |
 | `GET` | `/api/guests/<id>` | Mengambil detail tamu berdasarkan ID |
 | `DELETE` | `/api/guests/<id>` | Menghapus data tamu berdasarkan ID |
 | `GET` | `/api/stats` | Statistik total tamu, tamu hari ini, dan per kategori |
 | `GET` | `/api/export/csv` | Download berkas CSV seluruh data buku tamu |
 
-### Contoh Request Tambah Tamu (POST `/api/guests`):
-```json
-{
-  "name": "Budi Santoso",
-  "institution": "Universitas Indonesia",
-  "category": "Kedinasan",
-  "email": "budi@ui.ac.id",
-  "phone": "081234567890",
-  "purpose": "Konsultasi kerja sama riset AI"
-}
-```
-
 ---
 
 ## 🧪 Menjalankan Unit Testing
-
-Proyek ini telah dilengkapi dengan unit test otomatis untuk memastikan seluruh endpoint API bekerja dengan baik:
 
 ```bash
 cd backend

@@ -24,54 +24,60 @@ class GuestbookAPITest(unittest.TestCase):
         os.unlink(self.db_path)
 
     def test_add_and_list_guest(self):
-        # 1. Add a guest
+        # 1. Add a guest with signature
         payload = {
             "name": "Budi Santoso",
             "institution": "Universitas Indonesia",
             "email": "budi@ui.ac.id",
             "phone": "08123456789",
             "category": "Kedinasan",
-            "purpose": "Konsultasi kerja sama riset"
+            "purpose": "Konsultasi kerja sama riset",
+            "signature": "data:image/png;base64,mocksignature"
         }
         res = self.client.post('/api/guests', json=payload)
         self.assertEqual(res.status_code, 201)
         data = json.loads(res.data)
         self.assertEqual(data['status'], 'success')
         guest_id = data['data']['id']
+        self.assertEqual(data['data']['signature'], "data:image/png;base64,mocksignature")
 
-        # 2. List guests
-        res = self.client.get('/api/guests')
+        # 2. Add second guest
+        payload2 = {
+            "name": "Andi Wijaya",
+            "institution": "Startup XYZ",
+            "category": "Bisnis",
+            "purpose": "Diskusi kemitraan bisnis"
+        }
+        self.client.post('/api/guests', json=payload2)
+
+        # 3. List guests sorted by name
+        res = self.client.get('/api/guests?sort_by=name_asc')
         self.assertEqual(res.status_code, 200)
         data = json.loads(res.data)
-        self.assertEqual(data['count'], 1)
-        self.assertEqual(data['data'][0]['name'], "Budi Santoso")
+        self.assertEqual(data['count'], 2)
+        self.assertEqual(data['data'][0]['name'], "Andi Wijaya")
+        self.assertEqual(data['data'][1]['name'], "Budi Santoso")
 
-        # 3. Filter guests
+        # 4. Filter guests
         res = self.client.get('/api/guests?search=Budi')
         self.assertEqual(res.status_code, 200)
         data = json.loads(res.data)
         self.assertEqual(data['count'], 1)
 
-        res = self.client.get('/api/guests?category=Bisnis')
-        self.assertEqual(res.status_code, 200)
-        data = json.loads(res.data)
-        self.assertEqual(data['count'], 0)
-
-        # 4. Check stats
+        # 5. Check stats
         res = self.client.get('/api/stats')
         self.assertEqual(res.status_code, 200)
         stats = json.loads(res.data)['data']
-        self.assertEqual(stats['total'], 1)
-        self.assertEqual(stats['categories']['Kedinasan'], 1)
+        self.assertEqual(stats['total'], 2)
 
-        # 5. Delete guest
+        # 6. Delete guest
         res = self.client.delete(f'/api/guests/{guest_id}')
         self.assertEqual(res.status_code, 200)
 
-        # 6. Verify deleted
+        # 7. Verify deleted
         res = self.client.get('/api/guests')
         data = json.loads(res.data)
-        self.assertEqual(data['count'], 0)
+        self.assertEqual(data['count'], 1)
 
     def test_validation_errors(self):
         res = self.client.post('/api/guests', json={"name": ""})

@@ -36,7 +36,12 @@ def handle_guests():
     if request.method == 'GET':
         search = request.args.get('search', '').strip()
         category = request.args.get('category', '').strip()
-        guests = get_all_guests(search=search if search else None, category=category if category else None)
+        sort_by = request.args.get('sort_by', 'newest').strip()
+        guests = get_all_guests(
+            search=search if search else None,
+            category=category if category else None,
+            sort_by=sort_by
+        )
         return jsonify({'status': 'success', 'data': guests, 'count': len(guests)})
 
     if request.method == 'POST':
